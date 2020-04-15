@@ -1,6 +1,8 @@
 package com.engrene.gorjeta.service;
 
+import com.engrene.gorjeta.model.Permissao;
 import com.engrene.gorjeta.model.Usuario;
+import com.engrene.gorjeta.repository.PermissaoRepository;
 import com.engrene.gorjeta.repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +12,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UsuarioService {
 
     @Autowired
     private UsuarioRepository dao;
+
+    @Autowired
+    private PermissaoRepository permissaoDao;
 
 
     public Optional<Usuario> findByEmail(String email){
@@ -30,6 +35,25 @@ public class UsuarioService {
     public Optional<Usuario> findById(Long id){ return this.dao.findById(id); }
 
     public Usuario save(Usuario usuario){
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        usuario.setSenha(encoder.encode(usuario.getSenha()));
+        this.dao.save(usuario);
+        return usuario;
+    }
+
+    public Usuario saveClient(Usuario usuario) {
+        List<Permissao> permissoes = new ArrayList<>();
+        permissoes = this.permissaoDao.findAll();
+        usuario.setPermissoes(permissoes);
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        usuario.setSenha(encoder.encode(usuario.getSenha()));
+        this.dao.save(usuario);
+        return usuario;
+    }
+
+    public Usuario saveEmployee(Usuario usuario) {
+        Optional<Permissao> permissao = this.permissaoDao.findByDescricao("ROLE_PESQUISAR_USUARIO");
+        usuario.setPermissoes(Collections.singletonList(permissao.get()));
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         usuario.setSenha(encoder.encode(usuario.getSenha()));
         this.dao.save(usuario);

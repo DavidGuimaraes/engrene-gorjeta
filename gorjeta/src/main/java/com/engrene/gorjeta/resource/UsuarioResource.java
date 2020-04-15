@@ -20,7 +20,7 @@ import java.net.URI;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/rest/users")
+@RequestMapping("/rest/usuarios")
 public class UsuarioResource {
 
     @Autowired
@@ -62,6 +62,22 @@ public class UsuarioResource {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(usuarioSalvo.getIdUsuario()).toUri();
         return ResponseEntity.created(uri).body(mapper.entityToDto(usuarioSalvo));
 //        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.entityToDto(usuarioSalvo));
+    }
+
+    @PostMapping(value = "/cliente", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAuthenticated() and hasAuthority('ROLE_CADASTRAR_USUARIO') and #oauth2.hasScope('write')")
+    public ResponseEntity<UsuarioDto> criarCliente(@Valid @RequestBody Usuario usuario, HttpServletResponse response) {
+        Usuario usuarioSalvo = service.saveClient(usuario);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(usuarioSalvo.getIdUsuario()).toUri();
+        return ResponseEntity.created(uri).body(mapper.entityToDto(usuarioSalvo));
+    }
+
+    @PostMapping(value = "/empregado", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAuthenticated() and hasAuthority('ROLE_CADASTRAR_USUARIO') and #oauth2.hasScope('write')")
+    public ResponseEntity<UsuarioDto> criarEmpregado(@Valid @RequestBody Usuario usuario, HttpServletResponse response) {
+        Usuario usuarioSalvo = service.saveEmployee(usuario);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(usuarioSalvo.getIdUsuario()).toUri();
+        return ResponseEntity.created(uri).body(mapper.entityToDto(usuarioSalvo));
     }
 
     @PutMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
